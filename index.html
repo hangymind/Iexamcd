@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Ubuntu Mono', monospace;
+        }
+        
+        body {
+            background-color: #000;
+            color: #0f0;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        #terminal {
+            width: 100%;
+            height: 100vh;
+            background-color: #000;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #output {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 10px;
+            line-height: 1.4;
+            font-weight: bold;
+        }
+        
+        .input-line {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .prompt {
+            margin-right: 8px;
+            white-space: nowrap;
+            color: #0f0;
+            font-weight: bold;
+        }
+        
+        #input {
+            background-color: transparent;
+            border: none;
+            color: #0f0;
+            outline: none;
+            flex: 1;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .page {
+            display: none;
+            padding: 30px;
+            width: 100%;
+            height: 100vh;
+            background-color: #000;
+            overflow-y: auto;
+            color: #0f0;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .page h1 {
+            margin-bottom: 20px;
+            color: #0f0;
+            font-weight: bold;
+        }
+        
+        .page p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+            font-weight: bold;
+        }
+        
+        .terminal-simulation {
+            background-color: #111;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 3px solid #0f0;
+        }
+        
+        .terminal-simulation p {
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        button {
+            background-color: #000;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background-color: #0f0;
+            color: #000;
+        }
+        
+        .blink {
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            #terminal, .page {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="terminal">
+        <div id="output"></div>
+        <div class="input-line">
+            <span class="prompt">user@terminal:~$</span>
+            <input type="text" id="input" autofocus>
+        </div>
+    </div>
+    
+ 
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const output = document.getElementById('output');
+            const input = document.getElementById('input');
+            const pages = document.querySelectorAll('.page');
+            let targetUrl1="https://easylink.cc/moi04h";
+            let targetUrl2="https://easylink.cc/5r3e6z";
+            let currentLine = '';
+            
+            // 模拟终端启动过程
+            const bootSequence = [
+              {text:"xzy:made by deepseek",delay:500}
+                {text: "Initializing system...", delay: 500},
+                {text: "Loading kernel modules...", delay: 300},
+                {text: "Mounting file systems...", delay: 400},
+                {text: "Starting system services...", delay: 500},
+                {text: "[ OK ] Network Manager", delay: 200},
+                {text: "[ OK ] SSH Service", delay: 200},
+                {text: "[ OK ] Security Daemon", delay: 200},
+                {text: "Configuring hardware...", delay: 400},
+                {text: "Starting user session...", delay: 300},
+                {text: "System boot completed successfully!", delay: 600},
+                {text: "", delay: 500},
+                {text: "Welcome to Terminal Simulator v2.1", delay: 400},
+                {text: "System Information:", delay: 300},
+                {text: "  - OS: Ubuntu 22.04.3 LTS", delay: 100},
+                {text: "  - Kernel: 5.15.0-76-generic x86_64", delay: 100},
+                {text: "  - Host: terminal-server-04", delay: 100},
+                {text: "  - User: user", delay: 100},
+                {text: "", delay: 500},
+                {text: "New user detected. Available options:", delay: 400},
+                {text: "  1. Security Audit & Network Scan", delay: 200},
+                {text: "  2. System Diagnostics & Performance", delay: 200},
+                {text: "", delay: 300},
+                {text: "请输入选项编号 (1 或 2):", delay: 300}
+            ];
+            
+            // 逐行显示启动过程
+            function displayBootSequence(index) {
+                if (index < bootSequence.length) {
+                    const line = bootSequence[index];
+                    setTimeout(() => {
+                        if (line.text === "") {
+                            output.innerHTML += '<br>';
+                        } else {
+                            output.innerHTML += line.text + '<br>';
+                        }
+                        output.scrollTop = output.scrollHeight;
+                        displayBootSequence(index + 1);
+                    }, line.delay);
+                } else {
+                    // 启动完成，显示提示符
+                    showPrompt();
+                }
+            }
+            
+            // 显示提示符
+            function showPrompt() {
+                output.innerHTML += '<span class="prompt">user@terminal:~$</span>';
+                input.focus();
+            }
+            
+            // 处理用户输入
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    const command = input.value.trim();
+                    input.value = '';
+                    
+                    // 将用户输入添加到输出
+                    output.innerHTML += command + '<br>';
+                    
+                    // 处理命令
+                    if (command === '1') {
+                        output.innerHTML += 'Initializing security protocols...<br>';
+                        output.innerHTML += 'Scanning network interfaces...<br>';
+                        output.innerHTML += 'Security audit in progress...<br>';
+                        setTimeout(() => {
+                            showPage('page1');
+                        }, 1500);
+                    } else if (command === '2') {
+                        output.innerHTML += 'Running system diagnostics...<br>';
+                        output.innerHTML += 'Checking hardware status...<br>';
+                        output.innerHTML += 'Analyzing performance metrics...<br>';
+                        setTimeout(() => {
+                            showPage('page2');
+                        }, 1500);
+                    } else if (command === 'clear') {
+                        output.innerHTML = '';
+                        showPrompt();
+                    } else if (command) {
+                        output.innerHTML += 'Command "' + command + '" not found. Please enter 1 or 2.<br>';
+                        showPrompt();
+                    } else {
+                        showPrompt();
+                    }
+                    
+                    output.scrollTop = output.scrollHeight;
+                }
+            });
+            
+            // 显示指定页面
+            function showPage(pageId) {
+                if(command==='1'){
+                  window.location.href = targetUrl1;
+                }
+              else if(command==='2'){
+                window.location.href = targetUr2;
+              }
+            }
+            
+            // 重置终端
+            window.resetTerminal = function() {
+                pages.forEach(page => {
+                    page.classList.remove('active');
+                });
+                document.getElementById('terminal').style.display = 'flex';
+                output.innerHTML = '';
+                displayBootSequence(0);
+            };
+            
+            // 开始启动过程
+            displayBootSequence(0);
+        });
+    </script>
+</body>
+</html>
