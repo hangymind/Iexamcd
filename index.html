@@ -159,7 +159,7 @@
             
             // 模拟终端启动过程
             const bootSequence = [
-              {text:"xzy:made by deepseek",delay:500}
+              {text:"xzy:made by deepseek",delay:500},
                 {text: "Initializing system...", delay: 500},
                 {text: "Loading kernel modules...", delay: 300},
                 {text: "Mounting file systems...", delay: 400},
@@ -179,8 +179,8 @@
                 {text: "  - User: user", delay: 100},
                 {text: "", delay: 500},
                 {text: "New user detected. Available options:", delay: 400},
-                {text: "  1. Security Audit & Network Scan", delay: 200},
-                {text: "  2. System Diagnostics & Performance", delay: 200},
+                {text: "  1. Curl iexamcd update files", delay: 200},
+                {text: "  2. Gen p2p downloader to your computer", delay: 200},
                 {text: "", delay: 300},
                 {text: "请输入选项编号 (1 或 2):", delay: 300}
             ];
@@ -225,14 +225,16 @@
                         output.innerHTML += 'Scanning network interfaces...<br>';
                         output.innerHTML += 'Security audit in progress...<br>';
                         setTimeout(() => {
-                            showPage('page1');
+                            window.location.href = targetUrl1;
                         }, 1500);
                     } else if (command === '2') {
                         output.innerHTML += 'Running system diagnostics...<br>';
                         output.innerHTML += 'Checking hardware status...<br>';
                         output.innerHTML += 'Analyzing performance metrics...<br>';
+
+
                         setTimeout(() => {
-                            showPage('page2');
+                            window.location.href = targetUr2;
                         }, 1500);
                     } else if (command === 'clear') {
                         output.innerHTML = '';
