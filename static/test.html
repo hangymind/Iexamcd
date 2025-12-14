@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>randomAPI tester</title>
+</head>
+<body>
+    <script>
+        // 方案1：使用跨域代理（优先推荐，解决CORS问题）
+        async function getRandomQuote() {
+            // 备用代理地址（如果第一个失效，可换第二个）
+            const proxies = [
+                '',
+                ''
+            ];
+            const targetUrl = 'https://iecd.netlify.app/static/daily_quotes.json';
+            
+            for (const proxy of proxies) {
+                try {
+                    // 拼接代理URL + 目标JSON地址
+                    const requestUrl = proxy + encodeURIComponent(targetUrl);
+                    const response = await fetch(requestUrl, {
+                        method: 'GET',
+                        mode: 'cors', // 显式指定跨域模式
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        timeout: 10000 // 10秒超时
+                    });
+
+                    if (!response.ok) throw new Error(`状态码：${response.status}`);
+                    
+                    // 解析代理返回的数据（不同代理返回格式不同）
+                    let data = await response.json();
+                    // allorigins.win 代理返回的内容在 contents 字段里
+                    if (data.contents) data = JSON.parse(data.contents);
+                    
+                    // 随机选句子（适配JSON实际结构）
+                    const quotes = Array.isArray(data) ? data : (data.quotes || []);
+                    if (quotes.length === 0) throw new Error('无可用句子');
+                    
+                    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+                    // 适配JSON字段（根据实际结构调整：如果是对象取quote，字符串直接用）
+                    const finalText = typeof randomQuote === 'object' ? randomQuote.quote : randomQuote;
+                    
+                    document.body.textContent = finalText || '暂无句子';
+                    return; // 成功则退出循环
+                } catch (err) {
+                    console.log(`代理${proxy}失败：`, err.message);
+                    continue; // 尝试下一个代理
+                }
+            }
+
+            // 所有代理都失败时，显示备用提示
+            document.body.textContent = '获取失败，请刷新重试';
+        }
+
+        // 页面加载时执行
+        window.onload = getRandomQuote;
+    </script>
+	
+</body>
+</html>
